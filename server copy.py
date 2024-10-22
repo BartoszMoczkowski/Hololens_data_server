@@ -1,6 +1,8 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer,BaseHTTPRequestHandler
 import json
+import yaml
 import os 
+import datetime
 import socketserver
 from io import BytesIO
 class handler(SimpleHTTPRequestHandler):
@@ -31,6 +33,10 @@ class handler(SimpleHTTPRequestHandler):
         #send data length as well
         length  = int(self.headers.get('content-length'))
         data = self.rfile.read(length)
+        time = str(datetime.datetime.now()).replace(' ','_').replace(":","_")
+        with open(f"eye_tracking_data/{time}.txt",'w') as file:
+            print("got data")
+            file.write(str(data,encoding='utf-8'))
         print(data)
         message = "Hello, World! Here is a POST response"
         self.wfile.write(bytes(message, "utf8"))
@@ -42,11 +48,18 @@ class handler(SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             super().end_headers()
 
-data_json = {"recipies" : {}}
+data_json = {"recipies" : {},"recipie_names" : []}
 data_path = "./data"
 recipies = os.listdir(data_path)
+recipies = list(filter(lambda path : not ".yaml" in path,recipies))
 
+with open("data/localisation.yaml") as file:
+    localisation_data = yaml.full_load(file)
+
+ 
 for recipie in recipies:
+
+    data_json["recipie_names"].append(localisation_data["recipie_names"].pop())
     data_json["recipies"][recipie] = []
     steps = os.listdir(f"{data_path}/{recipie}")
     steps.sort(key=lambda x : int(x.split("_")[-1]))

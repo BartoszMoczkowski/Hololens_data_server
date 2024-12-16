@@ -1,7 +1,7 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer,BaseHTTPRequestHandler
 import json
 import yaml
-import os 
+import os
 import datetime
 import socketserver
 from io import BytesIO
@@ -15,14 +15,14 @@ class handler(SimpleHTTPRequestHandler):
             data_json_conv = json.dumps(data_json)
             self.wfile.write(data_json_conv.encode("utf-8"))
             return
-        
+
         if not self.path.startswith('/data'):
              self.send_response_only(404)
              return
-        
+
         super().do_GET()
         return
-    
+
 
     def do_POST(self):
         self.send_response(200)
@@ -56,7 +56,7 @@ recipies = list(filter(lambda path : not ".yaml" in path,recipies))
 with open("data/localisation.yaml") as file:
     localisation_data = yaml.full_load(file)
 
- 
+
 for recipie in recipies:
 
     data_json["recipie_names"].append(localisation_data["recipie_names"].pop())
@@ -72,10 +72,10 @@ for recipie in recipies:
 
 
 
+print(data_json)
 
 
 
-    
 with socketserver.TCPServer(("", 8123), handler) as httpd:
     print("Server running at port", 8000)
     httpd.serve_forever()

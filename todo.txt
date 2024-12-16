@@ -1,0 +1,15 @@
+[#] change the list select to wait for confirmation from the user (in the form of a button)
+[#] remove the play button when using images or text
+[?] some images are still flipped
+[#] no start and stop button at the end when using images?
+[#] play the first video only after pressing start
+[#] video fails to load/play after go back and forth
+[#] display all images for a step at once
+[] step 11 for chicken recipie might wrong images and video
+
+[#] remove menu with arrows and play button before pressing start
+[#] order images by substep before displaying
+[] the eyetracking data might not be getting cleared
+[#] 20cm lower display (done I guess?)
+[#] add stop event
+[] for each step calculate the total time spent and the total time spent looking at video/image/text

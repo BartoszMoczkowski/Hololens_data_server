@@ -76,6 +76,7 @@ print(data_json)
 
 
 
-with socketserver.TCPServer(("", 8123), handler) as httpd:
-    print("Server running at port", 8000)
+PORT = 8123
+with socketserver.TCPServer(("", PORT), handler) as httpd:
+    print(f"Server running at port {PORT}")
     httpd.serve_forever()

@@ -6,6 +6,10 @@ import re
 
 
 
+def calulcate_arrow_preses(step_event_list):
+    fitered_list = list(filter(lambda x:x['event_id']!=0,step_event_list)) 
+    return len(list(filter(lambda x:x['switched_forward'],fitered_list))),len(list(filter(lambda x:not x['switched_forward'],fitered_list)))
+
 def read_step_timestamps(step_event_list):
     step_timestamps = []
     steps = []
@@ -63,10 +67,9 @@ def calculate_time_looking_per_step(timestamps,totallooktime_for_each_timestamp,
         interpolated_time = tt0 + (t-t0)*(tt1-tt0)/(t1-t0)
         time_spent_at_step_switch.append((step,interpolated_time))
 
-        time_spent_step = []
-        prev_time = time_spent_at_step_switch[0][1]
-
-    for step,time in time_spent_at_step_switch :
+    time_spent_step = []
+    prev_time = time_spent_at_step_switch[0][1]
+    for step,time in time_spent_at_step_switch[1:] :
         
         time_spent_step.append((step,time - prev_time))
         prev_time = time
@@ -105,16 +108,19 @@ def sort_event_list(event_list):
     return sorted(event_list,key = lambda x : x["event_id"])
 
 def get_date_from_path(path):
-    match = re.search(".*//(.*).txt", path)
-    
+    #bruh XDD
+    match = re.search(".*\\\\(.*).txt", path)
     return match.group(1) if match != None else "date not found"
+
 parser = argparse.ArgumentParser("convert data to csv")
 parser.add_argument("files", help="paths to .txt file with data", type=argparse.FileType('r'),nargs="+")
 parser.add_argument("out", help="output flie", type=argparse.FileType('w'),nargs=1)
 args = parser.parse_args()
 
 
-column_names = ["time","mode"]
+
+column_names = ["time","mode","recipie"]
+column_names += ["n_forward","n_back"]
 column_names += [f"t_step_{x}" for x in range(1,16)]
 column_names += [f"t_look_step_{x}" for x in range(1,16)]
 df = pd.DataFrame(columns=column_names)
@@ -123,22 +129,28 @@ for file in args.files:
 
     event_step_data = sort_event_list(data_json["step_switches"])
     
-    eyetracking_event_data = sort_event_list(data_json["eye_tracking_data"]["Image"])
 
-    step_timestamps,steps = read_step_timestamps(event_step_data)
-    timestamps,totallooktime_for_each_timestamp = read_time_timestamps(eyetracking_event_data)
+    modes = data_json["eye_tracking_data"].keys()
 
-    time_spent_per_step = calculate_time_spent_per_step(step_timestamps,steps)
-    time_looking_per_step = calculate_time_looking_per_step(timestamps,totallooktime_for_each_timestamp,step_timestamps,steps)
-    time_s = [0]+[time_spent_per_step[x] for x in time_spent_per_step]
-    time_l = [time_looking_per_step[x] for x in time_looking_per_step]
+    for mode in modes:
+        eyetracking_event_data = sort_event_list(data_json["eye_tracking_data"][mode])
 
-    date = get_date_from_path(file.name)
+        step_timestamps,steps = read_step_timestamps(event_step_data)
+        timestamps,totallooktime_for_each_timestamp = read_time_timestamps(eyetracking_event_data)
 
-    data = [date,""] + time_s + time_l
-    data_df = pd.DataFrame([data],columns=column_names)
-    df = pd.concat([df,data_df])
+        time_spent_per_step = calculate_time_spent_per_step(step_timestamps,steps)
+        time_looking_per_step = calculate_time_looking_per_step(timestamps,totallooktime_for_each_timestamp,step_timestamps,steps)
+        time_s = [time_spent_per_step[x] for x in time_spent_per_step]
+        time_l = [time_looking_per_step[x] for x in time_looking_per_step]
 
+        date = get_date_from_path(file.name)
+        recpie_name = data_json["recipie_name"]
 
-df.to_csv(args.out[0],header=True)
+        switches_forward,switches_back = calulcate_arrow_preses(event_step_data)
+        data = [date,mode,recpie_name] + [switches_forward,switches_back]+ time_s + time_l
+        data_df = pd.DataFrame([data],columns=column_names)
+        df = pd.concat([df,data_df])
+
+print(df.head())
+df.to_csv(args.out[0],header=True,index=False,lineterminator='\n')
     

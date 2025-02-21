@@ -72,7 +72,7 @@ for recipie in recipies:
 
 
 
-print(data_json)
+
 
 
 

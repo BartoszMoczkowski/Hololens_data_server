@@ -108,7 +108,6 @@ def sort_event_list(event_list):
     return sorted(event_list,key = lambda x : x["event_id"])
 
 def get_date_from_path(path):
-    #bruh XDD
     match = re.search(".*\\\\(.*).txt", path)
     return match.group(1) if match != None else "date not found"
 
@@ -151,6 +150,5 @@ for file in args.files:
         data_df = pd.DataFrame([data],columns=column_names)
         df = pd.concat([df,data_df])
 
-print(df.head())
 df.to_csv(args.out[0],header=True,index=False,lineterminator='\n')
     

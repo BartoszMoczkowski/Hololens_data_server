@@ -1,5 +1,6 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer,BaseHTTPRequestHandler
 import json
+import pathlib
 import yaml
 import os
 import datetime
@@ -34,6 +35,7 @@ class handler(SimpleHTTPRequestHandler):
         length  = int(self.headers.get('content-length'))
         data = self.rfile.read(length)
         time = str(datetime.datetime.now()).replace(' ','_').replace(":","_")
+        pathlib.Path("eye_tracking_data").mkdir(parents=True,exist_ok=True)
         with open(f"eye_tracking_data/{time}.txt",'w') as file:
             print("got data")
             file.write(str(data,encoding='utf-8'))
